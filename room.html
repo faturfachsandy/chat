@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>chattingss</title>
+	<style type="text/css" media="screen">
+		form{
+			position: absolute; bottom: 0px; width: 90%; background: red; padding: 20px;
+		}
+		#nama{
+			float: left; width: 20%; height: 30px; border: none;
+		}
+		#text_box{
+			float: left; width: 40%; height: 30px; border: none; margin-left: 10px;
+		}
+		button{
+			float: left; width: 20%; height: 33px;
+		}
+		li{
+			padding: 5px;
+		}
+		/*li:nth-child(even){
+			background: #333; color: white;
+		}*/
+		.hidden {
+			display: none;
+		}
+		#leftbox {
+			float: left;
+			width: 30%
+		}
+		#rightbox {
+			float: right;
+			width: 60%
+		}
+	</style>
+</head>
+<body>
+
+	<div id="homepage">
+		<h1>Anonymous Chat</h1><br><br>
+		<input type="text" id="user" placeholder="Masukkan Identitas"><br><br>
+		<button id="subname">Join</button>
+	</div>
+
+	<div id="chatroom" class="hidden">
+		<div id="leftbox">
+			<ul id="liser">
+				
+			</ul>
+		</div>
+		<div id="rightbox">
+			<ul id="pesan">
+				
+			</ul>
+		</div>
+
+		<form>
+			<input type="text" id="text_box" placeholder="pesan"><button>Kirim</button>
+		</form>
+	</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script type="text/javascript">
+	var socket = io();
+	//var user = '';
+
+	$('form').submit(function(){
+		//user = $('#nama').val();
+		var msg = [$('#text_box').val()];
+		socket.emit('newMessage', msg);
+		$('#text_box').val('');
+		return false;
+	});
+
+	socket.on('online', function(usernya){
+		$('#liser').empty();
+
+		for (var i = 0; i < usernya.length; i++) {
+			$('#liser').append($('<li id="user_' + usernya[i] + '">').text(usernya[i]));			
+		}
+	});
+
+	socket.on('hapusUser', function(usr){
+		$('#user_' + usr).remove();
+	});	
+
+	socket.on('newMessage', function(msg){
+		$('#pesan').append($('<li>').text( msg[1] + " : " + msg[0]));
+	});
+
+	socket.on('info', function(anu){
+		$('#pesan').append($('<li>').text( anu ));
+	});
+
+	$('#subname').click(function(){
+		if ($('#user') != '') {
+			user = $('#user').val();
+			socket.emit('regis', user);
+		}
+	});
+
+	socket.on('regres', function(statusreg){
+		if (statusreg) {
+			alert('Identitas Telah Digunakan, Silahkan menggunakan nama lain!');
+		}else{
+			$('#chatroom').removeClass();
+			$('#homepage').addClass('hidden');		
+		}
+	});
+
+	
+</script>
+</body>
+</html>
